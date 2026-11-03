@@ -214,7 +214,7 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   <div class="sec-title">Tus deudas</div>
   <div id="list"></div>
   <button class="add" id="add">+ Añadir otra deuda</button>
-  <div class="hint">Si eliges <b>"cuántas cuotas faltan"</b>, pon también la TEA: sin ella no se puede separar cuánto de tus cuotas es interés. ¿No sabes tu <b>TEA</b>? Está en tu estado de cuenta o la pides por el chat de tu banco. En Perú: tarjetas de crédito 40–120%, préstamos personales 25–60%, vehicular 12–20%, hipotecario 8–12%.</div>
+  <div class="hint">Usa la <b>TCEA</b>, no la TEA. La TCEA incluye el seguro de desgravamen, portes y comisiones — o sea, lo que de verdad te cuesta la deuda. Si pones la TEA, el resultado te saldrá más optimista de lo real. Está en tu estado de cuenta, en el cronograma de pagos o la pides por el chat de tu banco. Referencia en Perú: tarjetas 40–120%, préstamos personales 25–60%, vehicular 12–20%, hipotecario 8–12%.</div>
 </section>
 
 <section>
@@ -269,7 +269,7 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   <details><summary>¿Qué es el método avalancha?</summary><p>Pagas el mínimo de todas tus deudas y todo el dinero extra se lo echas a la deuda con la <b>tasa de interés más alta</b>. Es el método que menos intereses te hace pagar en total. Matemáticamente siempre gana.</p></details>
   <details><summary>¿Y la bola de nieve?</summary><p>Igual, pero el dinero extra va a la deuda con el <b>saldo más pequeño</b>, para eliminarla rápido. Pagas un poco más de interés, pero ves deudas desaparecer antes y eso hace que mucha gente no abandone el plan. Si ya abandonaste otras veces, usa esta.</p></details>
   <details><summary>¿Por qué cuando termino una deuda las demás se aceleran?</summary><p>Porque la cuota que ya no pagas no te la gastas: se suma automáticamente a la siguiente deuda. Por eso se llama bola de nieve. Cada deuda que cae hace que la siguiente caiga más rápido.</p></details>
-  <details><summary>¿Qué es la TEA?</summary><p>Tasa Efectiva Anual: lo que realmente te cuesta la deuda en un año, ya con todo incluido. Es el número que debes comparar entre bancos. Si tu TEA es 100%, cada S/1,000 que debes te cuestan S/1,000 de interés al año.</p></details>
+  <details><summary>¿TEA o TCEA? ¿Cuál pongo?</summary><p>Pon la <b>TCEA</b>. La <b>TEA</b> es solo el interés; la <b>TCEA</b> suma además el seguro de desgravamen, los portes y las comisiones. Como acá ingresas tu cuota completa —lo que realmente te sale del bolsillo— la tasa también tiene que ser la completa. Si usas la TEA, la calculadora te dirá que sales antes de lo que en realidad vas a salir.</p></details>
   <details><summary>¿Mis datos se guardan en algún lado?</summary><p>No. Todo el cálculo ocurre dentro de tu navegador. No hay servidor, no hay cuenta, no hay base de datos. Puedes apagar el internet después de cargar la página y sigue funcionando.</p></details>
 </section>
 
@@ -380,7 +380,7 @@ function render(){
           ? campo(x,'ncuotas','Cuotas que faltan','','')
           : campo(x,'saldo','Saldo que debes',CUR.sym,''))+
         campo(x,'cuota','Cuota al mes',CUR.sym,'')+
-        campo(x,'tea','TEA','','%')+
+        campo(x,'tea','TCEA','','%')+
       '</div>'+
       '<div class="rowflag" id="flag'+x.id+'">⚠️ Tu cuota no alcanza a cubrir ni el interés de este mes. Con esta cuota esta deuda <b>nunca se termina</b> y crece. Hay que subir la cuota o renegociarla.</div>';
     list.appendChild(el);
