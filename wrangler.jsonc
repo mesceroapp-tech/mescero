@@ -1,0 +1,11 @@
+{
+  // Mes Cero es un sitio estático: no hay código de servidor, solo archivos.
+  // Este archivo le dice a Cloudflare exactamente qué publicar, para que no
+  // tenga que adivinar framework ni comando de compilación.
+  "name": "mescero",
+  "compatibility_date": "2026-11-03",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+}
