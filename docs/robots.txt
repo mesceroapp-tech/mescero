@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mescero.com/sitemap.xml
+Sitemap: https://mesceroapp-tech.github.io/mescero/sitemap.xml
