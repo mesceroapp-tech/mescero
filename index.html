@@ -138,6 +138,47 @@ tr.done td{color:var(--accent);font-weight:650}
 .empty{padding:30px 18px;text-align:center;color:var(--faint);font-size:14.5px}
 .warnbox{padding:14px;border-radius:11px;background:var(--warn-soft);color:var(--warn);font-size:14px;font-weight:600;margin-top:12px}
 
+/* puertas falsas */
+.pro{margin-top:26px}
+.pro-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:11px}
+.pro-head .sec-title{margin:0}
+.pro-head em{font-style:normal;font-size:12.5px;color:var(--faint)}
+.puertas{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media (max-width:520px){.puertas{grid-template-columns:1fr}}
+.puerta{display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  color:var(--text);box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+.puerta:hover{border-color:var(--accent);transform:translateY(-1px)}
+.puerta .ic{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent-soft);
+  color:var(--accent-ink);display:grid;place-items:center;font-size:15px}
+.puerta .tx{min-width:0}
+.puerta .tt{display:block;font-weight:650;font-size:14px;line-height:1.25}
+.puerta .ds{display:block;font-size:12px;color:var(--faint);margin-top:2px;line-height:1.35}
+
+.velo{position:fixed;inset:0;background:rgba(10,20,16,.55);backdrop-filter:blur(3px);
+  display:grid;place-items:center;padding:18px;z-index:50}
+.velo[hidden]{display:none!important}
+.modal{background:var(--surface);border-radius:17px;max-width:420px;width:100%;
+  padding:24px 22px;box-shadow:0 24px 60px -12px rgba(0,0,0,.5);position:relative}
+.modal .cerrar{position:absolute;top:11px;right:13px;background:none;border:none;
+  font-size:23px;line-height:1;color:var(--faint);padding:4px 7px;border-radius:8px}
+.modal .cerrar:hover{color:var(--text);background:var(--surface-2)}
+.modal h3{font-size:19px;letter-spacing:-.015em;padding-right:28px}
+.modal .pq{color:var(--muted);font-size:14.5px;margin:9px 0 0}
+.modal .oferta{margin:15px 0;padding:12px 14px;border-radius:11px;background:var(--accent-soft);
+  color:var(--accent-ink);font-size:14px;font-weight:650}
+.fmail{display:flex;gap:8px;margin-top:4px}
+.fmail input{flex:1;min-width:0;background:var(--surface-2);border:1.5px solid var(--line);
+  border-radius:10px;padding:11px 13px;font-size:15px}
+.fmail input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.fmail button{background:var(--accent);color:var(--surface);border:none;border-radius:10px;
+  padding:11px 17px;font-weight:700}
+.fmail button:disabled{opacity:.5}
+.nota{font-size:12px;color:var(--faint);margin-top:10px}
+.gracias{text-align:center;padding:8px 0}
+.gracias .tick{font-size:34px}
+.gracias h3{margin:6px 0 7px}
+
 /* faq */
 .faq details{border-bottom:1px solid var(--line)}
 .faq summary{padding:14px 2px;font-weight:650;cursor:pointer}
@@ -207,6 +248,21 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
     <div class="scroll"><table id="tbl"></table></div>
   </details>
 </section>
+
+<section class="pro" id="pro" hidden>
+  <div class="pro-head">
+    <div class="sec-title">Lo que viene</div>
+    <em>en desarrollo</em>
+  </div>
+  <div class="puertas" id="puertas"></div>
+</section>
+
+<div class="velo" id="velo" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtit">
+    <button class="cerrar" id="cerrar" aria-label="Cerrar">&times;</button>
+    <div id="mcuerpo"></div>
+  </div>
+</div>
 
 <section class="faq">
   <div class="sec-title">Preguntas</div>
@@ -412,6 +468,8 @@ function calcular(){
     ol.appendChild(li);
   });
   osec.hidden=false;
+  document.getElementById('pro').hidden=false;
+  pintarPuertas();
 
   // tabla mes a mes
   var t=document.getElementById('tbl');
@@ -463,6 +521,102 @@ document.getElementById('bAva').onclick=function(){setEstrategia('avalancha')};
 document.getElementById('bBol').onclick=function(){setEstrategia('bola')};
 document.getElementById('cur').addEventListener('change',function(){
   var p=this.value.split('|'); CUR.sym=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
+});
+
+/* ---------- puertas falsas ----------
+   Idea tomada del caso de Ramón: en vez de adivinar qué funciones construir,
+   se publican los botones ANTES de que existan. Quien los pulsa deja su correo
+   a cambio de un descuento. Así se sabe (a) si alguien pagaría y (b) cuáles
+   dos de las ocho vale la pena construir. Él descubrió que 2 de 8 se llevaban
+   el 83% de los clics y solo desarrolló esas.
+
+   Para que los correos lleguen a algún lado hay que poner acá la URL del
+   Apps Script. Mientras esté vacío, todo se guarda en el navegador y la
+   pantalla funciona igual, para poder probarla. */
+var ENDPOINT = '';
+
+var PUERTAS = [
+  {id:'guardar',  ic:'\u{1F4BE}', tt:'Guardar mi plan',           ds:'Vuelve cuando quieras sin volver a escribir todo'},
+  {id:'pdf',      ic:'\u{1F4C4}', tt:'Descargarlo en PDF',        ds:'Para imprimirlo o llevarlo al banco'},
+  {id:'seguir',   ic:'\u{1F4C8}', tt:'Seguimiento mes a mes',     ds:'Marca cada cuota y mira cuánto te falta de verdad'},
+  {id:'alerta',   ic:'\u{1F514}', tt:'Recordarme antes de pagar', ds:'Un aviso días antes de cada vencimiento'},
+  {id:'consol',   ic:'\u{1F517}', tt:'¿Me conviene consolidar?',  ds:'Junta todo en una sola deuda y compara'},
+  {id:'amort',    ic:'\u{1F4B0}', tt:'Simular una amortización',  ds:'Si pago un monto de golpe, ¿cuánto adelanto?'},
+  {id:'plazo',    ic:'\u{2696}',  tt:'¿Bajar cuota o bajar plazo?', ds:'La pregunta que todo banco te hace y nadie explica'},
+  {id:'tasa',     ic:'\u{1F6A9}', tt:'¿Estoy pagando de más?',    ds:'Compara tu TEA con la del mercado'}
+];
+
+function leer(k,d){ try{ return JSON.parse(localStorage.getItem(k)) || d; }catch(e){ return d; } }
+function guardar(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+function pintarPuertas(){
+  var c=document.getElementById('puertas'); if(c.children.length) return;
+  PUERTAS.forEach(function(p){
+    var b=document.createElement('button');
+    b.className='puerta'; b.type='button'; b.dataset.puerta=p.id;
+    b.innerHTML='<span class="ic">'+p.ic+'</span><span class="tx">'+
+      '<span class="tt">'+p.tt+'</span><span class="ds">'+p.ds+'</span></span>';
+    b.addEventListener('click',function(){ abrirPuerta(p); });
+    c.appendChild(b);
+  });
+}
+
+function abrirPuerta(p){
+  var clics=leer('mc_clics',{});
+  clics[p.id]=(clics[p.id]||0)+1;
+  guardar('mc_clics',clics);
+
+  var yaDio=leer('mc_correo','');
+  var cuerpo=document.getElementById('mcuerpo');
+
+  if(yaDio){
+    enviar(p.id,yaDio);
+    cuerpo.innerHTML='<div class="gracias"><div class="tick">\u2713</div>'+
+      '<h3>Ya estás en la lista</h3>'+
+      '<p class="pq">Te avisamos a <b>'+esc(yaDio)+'</b> en cuanto <b>'+esc(p.tt)+'</b> esté lista, con tu 50% de descuento.</p></div>';
+  } else {
+    cuerpo.innerHTML=
+      '<h3 id="mtit">'+esc(p.tt)+'</h3>'+
+      '<p class="pq">Todavía no está lista. La estamos construyendo para el plan Pro.</p>'+
+      '<div class="oferta">D\u00e9janos tu correo y te damos <b>50% de descuento</b> cuando salga.</div>'+
+      '<form class="fmail" id="fmail"><input type="email" required placeholder="tu@correo.com" '+
+      'autocomplete="email" aria-label="Tu correo"><button type="submit">Avísame</button></form>'+
+      '<p class="nota">Solo para avisarte de esta función. Nada más, y te puedes salir cuando quieras.</p>';
+    document.getElementById('fmail').addEventListener('submit',function(e){
+      e.preventDefault();
+      var correo=this.querySelector('input').value.trim();
+      if(!correo) return;
+      guardar('mc_correo',correo);
+      enviar(p.id,correo);
+      cuerpo.innerHTML='<div class="gracias"><div class="tick">\u2713</div>'+
+        '<h3>Listo</h3><p class="pq">Te escribimos a <b>'+esc(correo)+'</b> en cuanto esté. Gracias por decirnos qué te hace falta.</p></div>';
+    });
+  }
+  document.getElementById('velo').hidden=false;
+  var i=cuerpo.querySelector('input'); if(i) setTimeout(function(){i.focus()},50);
+}
+
+function enviar(puerta,correo){
+  var dato={puerta:puerta, correo:correo, clics:leer('mc_clics',{}),
+            cuando:new Date().toISOString()};
+  if(!ENDPOINT){
+    var cola=leer('mc_cola',[]); cola.push(dato); guardar('mc_cola',cola);
+    return;
+  }
+  try{
+    fetch(ENDPOINT,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(dato)}).catch(function(){});
+  }catch(e){}
+}
+
+function cerrarVelo(){ document.getElementById('velo').hidden=true; }
+document.getElementById('cerrar').addEventListener('click',cerrarVelo);
+document.getElementById('velo').addEventListener('click',function(e){
+  if(e.target===this) cerrarVelo();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape' && !document.getElementById('velo').hidden) cerrarVelo();
 });
 
 /* arranque */
