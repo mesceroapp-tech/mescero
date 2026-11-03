@@ -5,7 +5,7 @@
   "name": "mescero",
   "compatibility_date": "2026-11-03",
   "assets": {
-    "directory": "./public",
+    "directory": "./docs",
     "not_found_handling": "404-page"
   }
 }
