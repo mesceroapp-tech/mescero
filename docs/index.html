@@ -468,6 +468,7 @@ function calcular(){
     ol.appendChild(li);
   });
   osec.hidden=false;
+  USO = true;
   document.getElementById('pro').hidden=false;
   pintarPuertas();
 
@@ -617,6 +618,53 @@ document.getElementById('velo').addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape' && !document.getElementById('velo').hidden) cerrarVelo();
+});
+
+/* ---------- medición propia, sin cookies ni terceros ----------
+   Reusa el mismo Apps Script de las puertas falsas, así que no hace falta
+   ninguna cuenta más. Dos pings por visita:
+     1) al entrar  -> de dónde vino
+     2) al salir   -> cuántos segundos estuvo y si LLEGÓ A USAR la calculadora
+   Ese segundo dato es el que vale: separa a quien miró de quien la usó.
+   No se guarda nada que identifique a nadie: ni IP, ni cookie, ni huella. */
+var T0 = Date.now();
+var USO = false;          // ¿llegó a ver un resultado?
+var SALIDA_ENVIADA = false;
+
+function medir(tipo, detalle, datos){
+  if(!ENDPOINT) return;
+  try{
+    var cuerpo = JSON.stringify({puerta:tipo, correo:detalle, clics:datos,
+                                 cuando:new Date().toISOString()});
+    if(tipo==='__salida' && navigator.sendBeacon){
+      navigator.sendBeacon(ENDPOINT, new Blob([cuerpo],{type:'text/plain;charset=utf-8'}));
+    } else {
+      fetch(ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,
+        headers:{'Content-Type':'text/plain;charset=utf-8'},body:cuerpo}).catch(function(){});
+    }
+  }catch(e){}
+}
+
+function origen(){
+  var r = document.referrer || '';
+  if(!r) return 'directo';
+  try{ return new URL(r).hostname.replace(/^www\./,''); }catch(e){ return 'otro'; }
+}
+
+medir('__visita', origen(), {ancho:window.innerWidth});
+
+function despedirse(){
+  if(SALIDA_ENVIADA) return;
+  SALIDA_ENVIADA = true;
+  medir('__salida', origen(), {
+    segundos: Math.round((Date.now()-T0)/1000),
+    uso: USO,
+    deudas: deudas.filter(function(x){return capitalDe(x)>0 && x.cuota>0}).length
+  });
+}
+window.addEventListener('pagehide', despedirse);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') despedirse();
 });
 
 /* arranque */
