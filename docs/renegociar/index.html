@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo renegociar una deuda con el banco — guía por país | Mes Cero</title>
+<meta name="description" content="Qué pedir, en qué orden y con qué palabras exactas para reprogramar o reestructurar una deuda. Guía para Perú, México, Colombia, Chile y Argentina.">
+<link rel="canonical" href="https://mescero.com/renegociar/">
+<meta property="og:title" content="Cómo renegociar una deuda con el banco">
+<meta property="og:description" content="Las palabras exactas que funcionan, país por país.">
+<meta property="og:image" content="https://mescero.com/portada.png">
+<link rel="stylesheet" href="/articulos/estilo.css">
+<style>
+.paises{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:26px 0}
+@media(max-width:460px){.paises{grid-template-columns:1fr}}
+.paises a{display:block;padding:17px 18px;background:var(--surface);border:1px solid var(--line);
+  border-radius:13px;text-decoration:none;color:var(--text);font-weight:700;font-size:17px;
+  transition:border-color .15s,transform .15s}
+.paises a:hover{border-color:var(--accent);transform:translateY(-1px)}
+.paises a span{display:block;font-weight:400;font-size:13.5px;color:var(--faint);margin-top:4px}
+.elige{display:flex;gap:9px;align-items:center;margin:22px 0 4px;flex-wrap:wrap}
+.elige label{font-weight:650;font-size:15px;color:var(--muted)}
+.elige select{flex:1;min-width:190px;background:var(--surface);border:1.5px solid var(--line);
+  border-radius:11px;padding:13px 14px;font:inherit;font-weight:650;color:var(--text)}
+.elige select:focus{outline:none;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="brand" href="/"><span class="mark">0</span> Mes&nbsp;Cero</a>
+  <a class="volver" href="/articulos/">Artículos</a>
+</header>
+
+<h1>Cómo renegociar tu deuda</h1>
+<p class="lede">La mayoría espera a atrasarse para llamar al banco. Es exactamente al revés: <strong>mientras estás al día tienes poder de negociación; cuando caes en mora lo pierdes.</strong> Acá está qué pedir, en qué orden y con qué palabras, según dónde estés.</p>
+
+<div class="elige">
+  <label for="pais">¿De qué país eres?</label>
+  <select id="pais" aria-label="Elige tu país">
+    <option value="">Elige tu país…</option>
+    <option value="/renegociar/peru.html">🇵🇪 Perú</option>
+    <option value="/renegociar/mexico.html">🇲🇽 México</option>
+    <option value="/renegociar/colombia.html">🇨🇴 Colombia</option>
+    <option value="/renegociar/chile.html">🇨🇱 Chile</option>
+    <option value="/renegociar/argentina.html">🇦🇷 Argentina</option>
+  </select>
+</div>
+
+<div class="paises">
+  <a href="peru.html">🇵🇪 Perú <span>Reprogramación vs refinanciación · SBS e Indecopi</span></a>
+  <a href="mexico.html">🇲🇽 México <span>Reestructura y quita · CONDUSEF y REDECO</span></a>
+  <a href="colombia.html">🇨🇴 Colombia <span>Acuerdo de pago · Datacrédito y Superfinanciera</span></a>
+  <a href="chile.html">🇨🇱 Chile <span>Repactación y lo que implica · SERNAC y CMF</span></a>
+  <a href="argentina.html">🇦🇷 Argentina <span>Refinanciar con inflación · BCRA y Veraz</span></a>
+</div>
+
+<h2>Lo que aplica en todos lados</h2>
+<ul>
+  <li><strong>Llama tú antes de fallar.</strong> Al cliente que paga lo reestructuran para no perderlo; al que ya cayó en mora lo mandan a cobranza.</li>
+  <li><strong>No prometas una fecha que no puedas cumplir.</strong> Fallar una fecha prometida es peor que negociar otra más lejana.</li>
+  <li><strong>Que quede por escrito.</strong> Un acuerdo de palabra con un asesor no existe la semana siguiente.</li>
+  <li><strong>Nadie va preso por una deuda de consumo.</strong> Si te amenazan con cárcel, están mintiendo y es denunciable.</li>
+</ul>
+
+<a class="cta" href="/">
+  <b>Antes de llamar, ten tus números</b>
+  <span>Saber cuánto debes de verdad y qué porcentaje de tu ingreso se llevan las cuotas cambia la conversación. Gratis, sin registro.</span>
+</a>
+
+<footer><a href="/">Mes Cero</a> · Información general, no asesoría legal. Las normas varían por país. · <a href="/privacidad.html">Privacidad</a></footer>
+</div>
+<script>
+document.getElementById('pais').addEventListener('change', function(){
+  if(this.value) location.href = this.value;
+});
+</script>
+</body>
+</html>
