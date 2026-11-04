@@ -200,6 +200,13 @@ tr.done td{color:var(--accent);font-weight:650}
 .faq p{color:var(--muted);margin:0 0 14px;font-size:15px}
 footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;border-top:1px solid var(--line);margin-top:30px}
 .topbar{display:flex;justify-content:space-between;align-items:center}
+.nav{margin-left:14px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;
+  border-bottom:1.5px solid transparent;padding-bottom:1px}
+.nav:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.guardado{font-size:12.5px;color:var(--faint);text-align:center;margin-top:9px}
+.guardado button{background:none;border:none;color:var(--faint);text-decoration:underline;
+  font-size:12.5px;padding:0 2px;cursor:pointer}
+.guardado button:hover{color:var(--danger)}
 .cursel{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;font-weight:650}
 </style>
 </head>
@@ -207,7 +214,7 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
 <div class="wrap">
 
 <header class="topbar">
-  <div class="brand"><span class="mark">0</span> Mes&nbsp;Cero</div>
+  <div class="brand"><span class="mark">0</span> Mes&nbsp;Cero <a class="nav" href="/articulos/">Artículos</a></div>
   <select class="cursel" id="cur" aria-label="Moneda">
     <option value="S/|PE">S/ Perú</option>
     <option value="$|MX">$ México</option>
@@ -253,6 +260,8 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
     <div class="empty">Agrega al menos una deuda con su saldo y su cuota para ver tu fecha de salida.</div>
   </div>
   <div id="warn"></div>
+  <p class="guardado" id="aviso-guardado" hidden>Tus deudas quedan guardadas en este navegador, solo en tu dispositivo.
+    <button type="button" id="btnOlvidar">Borrarlas</button></p>
 </section>
 
 <section id="orderSec" hidden>
@@ -490,6 +499,7 @@ function calcular(){
   USO = true;
   document.getElementById('pro').hidden=false;
   pintarPuertas();
+  recordar();
 
   // tabla mes a mes
   var t=document.getElementById('tbl');
@@ -558,6 +568,7 @@ function setEstrategia(s){
     : 'El dinero extra ataca primero la deuda <b>más pequeña</b>. Pagas algo más de interés, pero ves resultados antes.';
   calcular();
 }
+document.getElementById('btnOlvidar').addEventListener('click',olvidar);
 document.getElementById('bAva').onclick=function(){setEstrategia('avalancha')};
 document.getElementById('bBol').onclick=function(){setEstrategia('bola')};
 document.getElementById('cur').addEventListener('change',function(){
@@ -707,9 +718,44 @@ document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'hidden') despedirse();
 });
 
+/* ---------- recordar en el navegador ----------
+   Sin cuenta, sin servidor, sin que nada salga del dispositivo: las deudas
+   quedan en el navegador de la persona para que las encuentre al volver.
+   Es el 90% de lo que daría una cuenta, sin convertirnos en custodios de
+   datos financieros ajenos — que es justo lo que promete la portada. */
+function recordar(){
+  guardar('mc_plan', {deudas:deudas, extra:+document.getElementById('extra').value,
+                      estrategia:estrategia, cur:document.getElementById('cur').value});
+  pintarAviso();
+}
+function pintarAviso(){
+  var a=document.getElementById('aviso-guardado');
+  if(!a) return;
+  var hay = deudas.some(function(x){return capitalDe(x)>0 && x.cuota>0});
+  a.hidden = !hay;
+}
+function olvidar(){
+  try{ localStorage.removeItem('mc_plan'); }catch(e){}
+  deudas=[nuevaDeuda(),nuevaDeuda()]; uid=2;
+  document.getElementById('extra').value=0;
+  render();
+}
+
 /* arranque */
-deudas=[nuevaDeuda('',0,0,null),nuevaDeuda('',0,0,null)];
-setEstrategia('avalancha');
+var plan = leer('mc_plan', null);
+if(plan && plan.deudas && plan.deudas.length){
+  deudas = plan.deudas;
+  uid = Math.max.apply(null, deudas.map(function(x){return x.id})) || 0;
+  document.getElementById('extra').value = plan.extra || 0;
+  if(plan.cur){
+    var sel=document.getElementById('cur'); sel.value=plan.cur;
+    var pr=plan.cur.split('|'); CUR.sym=pr[0]; CUR.loc=LOCS[pr[1]]||'es-PE';
+  }
+  estrategia = plan.estrategia || 'avalancha';
+} else {
+  deudas=[nuevaDeuda('',0,0,null),nuevaDeuda('',0,0,null)];
+}
+setEstrategia(estrategia);
 render();
 </script>
 </body>
