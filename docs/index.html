@@ -9,6 +9,16 @@
 <meta property="og:title" content="Mes Cero — ¿En qué mes sales de tus deudas?">
 <meta property="og:description" content="Pon tus deudas y te digo la fecha exacta en que quedas libre, y el orden en que pagarlas.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://mescero.com/">
+<meta property="og:image" content="https://mescero.com/portada.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_PE">
+<meta property="og:site_name" content="Mes Cero">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿En qué mes sales de tus deudas?">
+<meta name="twitter:description" content="La fecha exacta, el orden en que pagarlas y cuánto interés te ahorras. Gratis y sin registro.">
+<meta name="twitter:image" content="https://mescero.com/portada.png">
 <style>
 :root{
   --bg:#f6f7f5; --surface:#ffffff; --surface-2:#eff1ed; --line:#d9ddd6;
@@ -113,6 +123,11 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:3px}
 .stat .v.good{color:var(--accent)}
 .stat .v.bad{color:var(--warn)}
+.compartir{margin-top:13px;width:100%;padding:13px;border-radius:11px;border:1.5px solid var(--accent);
+  background:transparent;color:var(--accent);font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.compartir:hover{background:var(--accent-soft)}
+.compartir.listo{border-color:var(--line);color:var(--muted)}
 .saving{margin-top:14px;padding:13px;border-radius:11px;background:var(--accent-soft);color:var(--accent-ink);font-size:14.5px;font-weight:650}
 
 /* order */
@@ -449,7 +464,11 @@ function calcular(){
       ? '<div class="saving">Ojo: pagando <b>solo las cuotas mínimas</b>, alguna de estas deudas nunca se terminaría. Este plan sí la cierra, y por eso vale la pena.</div>'
       : (ahorroInt>1||ahorroMes>0)
         ? '<div class="saving">Con este plan te ahorras <b>'+money(ahorroInt)+'</b> de intereses y sales <b>'+ahorroMes+' meses antes</b> que pagando solo las cuotas mínimas.</div>'
-        : '<div class="saving">Mueve el control de pago extra para ver cuánto adelantas tu fecha de salida.</div>');
+        : '<div class="saving">Mueve el control de pago extra para ver cuánto adelantas tu fecha de salida.</div>')
+    + '<button class="compartir" id="btnCompartir" type="button">Compartir mi mes cero</button>';
+
+  var bc = document.getElementById('btnCompartir');
+  if(bc) bc.addEventListener('click', function(){ compartir(fechaDe(plan.meses)); });
 
   // orden de ataque
   var act=validas.slice().sort(function(a,b){
@@ -481,6 +500,27 @@ function calcular(){
       return '<td>'+(f.saldos[x.id]>0.5?money(f.saldos[x.id]):'✓ libre')+'</td>'}).join('')+'</tr>';
   }).join('');
   t.innerHTML=head+body;
+}
+
+/* ---------- compartir ----------
+   El dato que la gente quiere contar no es la herramienta: es SU fecha.
+   "Mi mes cero es enero 2029" se comparte solo; "usa esta calculadora" no.
+   Cada persona que comparte su resultado trae gente sin que cueste nada. */
+function compartir(fecha){
+  var txt = 'Mi mes cero es ' + fecha + ' — la fecha en que termino de pagar mis deudas. '
+          + 'Calcula la tuya gratis en mescero.com';
+  medir('__compartir', fecha, {});
+  if(navigator.share){
+    navigator.share({title:'Mes Cero', text:txt, url:'https://mescero.com/'}).catch(function(){});
+    return;
+  }
+  var b=document.getElementById('btnCompartir');
+  try{
+    navigator.clipboard.writeText(txt + ' https://mescero.com/');
+    b.textContent='✓ Copiado, ya puedes pegarlo';
+    b.className='compartir listo';
+    setTimeout(function(){ b.textContent='Compartir mi mes cero'; b.className='compartir'; },3000);
+  }catch(e){}
 }
 
 /* ---------- eventos ---------- */
