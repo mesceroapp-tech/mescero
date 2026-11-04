@@ -483,7 +483,7 @@ function calcular(){
     var li=document.createElement('li');
     if(i===0)li.className='first';
     li.innerHTML='<span class="oname">'+esc(x.nombre||'Deuda '+(i+1))+'</span>'+
-      '<span class="ometa">'+(x.tea?x.tea+'% TEA · ':'')+money(x.saldo)+'<br>libre en '+(det&&det.mesFin?fechaDe(det.mesFin):'—')+'</span>';
+      '<span class="ometa">'+(x.tea?x.tea+'% TCEA · ':'')+money(x.saldo)+'<br>libre en '+(det&&det.mesFin?fechaDe(det.mesFin):'—')+'</span>';
     ol.appendChild(li);
   });
   osec.hidden=false;
