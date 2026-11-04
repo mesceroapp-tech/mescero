@@ -112,6 +112,17 @@ section{margin:26px 0}
 .slider-head b{font-size:19px;font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 
+/* curva de la deuda */
+.curva{margin-top:16px;padding-top:4px}
+.curva svg{display:block;width:100%;height:auto;overflow:visible}
+.curva .eje{font-size:10.5px;fill:var(--faint);font-weight:600}
+.curva-tit{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--faint);text-align:left;margin-bottom:9px}
+
+.golpe{margin-top:12px;padding:13px 15px;border-radius:11px;background:var(--surface-2);
+  color:var(--text);font-size:14.5px;font-weight:600;line-height:1.5}
+.golpe b{color:var(--accent)}
+
 /* diagnóstico de carga */
 .ingreso{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .ingreso label{font-size:13.5px;font-weight:650;color:var(--muted);flex:1;min-width:0}
@@ -276,6 +287,11 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
     <input type="range" id="extra" min="0" max="2000" step="25" value="0">
     <div class="hint" id="stratHint"></div>
     <div class="ingreso">
+      <label for="unico">¿Te va a caer un monto de golpe? <span style="font-weight:400">(gratificación, CTS…)</span></label>
+      <div class="inp"><span class="pre" id="curUni">S/</span>
+        <input type="number" id="unico" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+    </div>
+    <div class="ingreso">
       <label for="ingreso">¿Cuánto te entra al mes? <span style="font-weight:400">(opcional)</span></label>
       <div class="inp"><span class="pre" id="curIng">S/</span>
         <input type="number" id="ingreso" inputmode="decimal" min="0" step="any" placeholder="0"></div>
@@ -361,7 +377,7 @@ function capitalDe(x){
 }
 
 /* ---------- simulación ---------- */
-function simular(lista,extra,modo){
+function simular(lista,extra,modo,unico){
   // modo: 'avalancha' | 'bola' | 'minimo'
   var d=lista.map(function(x){
     return {id:x.id,nombre:x.nombre,saldo:x.saldo,cuota:x.cuota,
@@ -373,6 +389,9 @@ function simular(lista,extra,modo){
     var liberado=0;
     d.forEach(function(x){ if(x.saldo<=0.5) liberado+=x.cuota; });
     var bolsa=(modo==='minimo')?0:extra+liberado;
+    // Un monto que cae de golpe (gratificación, CTS, aguinaldo) entra una
+    // sola vez, en el primer mes, y se reparte con el mismo criterio.
+    if(mes===1 && modo!=='minimo' && unico) bolsa += unico;
     var fila={mes:mes,saldos:{},cerradas:[]};
 
     // 1) interés + cuota mínima de cada deuda activa
@@ -439,6 +458,7 @@ function render(){
   });
   document.getElementById('extraLbl').textContent=money(+document.getElementById('extra').value);
   document.getElementById('curIng').textContent=CUR.sym;
+  document.getElementById('curUni').textContent=CUR.sym;
   calcular();
 }
 function campo(x,k,lbl,pre,suf){
@@ -475,8 +495,10 @@ function calcular(){
 
   var extra=+document.getElementById('extra').value;
   var modo=(estrategia==='avalancha')?'avalancha':'bola';
-  var plan=simular(validas,extra,modo);
+  var unico = parseFloat(document.getElementById('unico').value) || 0;
+  var plan=simular(validas,extra,modo,unico);
   var base=simular(validas,0,'minimo');
+  var sinUnico = unico>0 ? simular(validas,extra,modo,0) : null;
 
   if(plan.estancado){
     res.innerHTML='<div class="empty">Con estas cuotas la deuda no se termina: el interés crece más rápido de lo que pagas. Sube la cuota o usa el control de pago extra para ver cuánto necesitas.</div>';
@@ -507,6 +529,50 @@ function calcular(){
 
   var bc = document.getElementById('btnCompartir');
   if(bc) bc.addEventListener('click', function(){ compartir(fechaDe(plan.meses)); });
+
+  // ---------- la curva hasta cero ----------
+  // Un número dice cuándo sales; la curva te lo hace sentir. Y es lo que
+  // la gente fotografía para compartir.
+  (function(){
+    var serie=[totalDeuda];
+    plan.filas.forEach(function(f){
+      var t=0; validas.forEach(function(x){ t += (f.saldos[x.id]||0); });
+      serie.push(t);
+    });
+    if(serie.length<3) return;
+    var W=320, H=86, max=serie[0]||1;
+    var px=function(i){ return (i/(serie.length-1))*W; };
+    var py=function(v){ return H - (v/max)*H; };
+    var d='M'+px(0).toFixed(1)+','+py(serie[0]).toFixed(1);
+    for(var i=1;i<serie.length;i++) d+='L'+px(i).toFixed(1)+','+py(serie[i]).toFixed(1);
+    var area = d+'L'+W+','+H+'L0,'+H+'Z';
+    res.innerHTML += '<div class="curva"><div class="curva-tit">Tu deuda hasta cero</div>'+
+      '<svg viewBox="-4 -6 '+(W+30)+' '+(H+26)+'" role="img" aria-label="Tu deuda bajando hasta cero">'+
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0" stop-color="currentColor" stop-opacity=".22"/>'+
+        '<stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>'+
+      '<g color="var(--accent)">'+
+      '<path d="'+area+'" fill="url(#g)"/>'+
+      '<path d="'+d+'" fill="none" stroke="currentColor" stroke-width="2.4" '+
+        'stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<circle cx="'+W+'" cy="'+H+'" r="4" fill="currentColor"/>'+
+      '</g>'+
+      '<text class="eje" x="0" y="'+(H+16)+'">hoy</text>'+
+      '<text class="eje" x="'+W+'" y="'+(H+16)+'" text-anchor="end">'+fechaDe(plan.meses)+'</text>'+
+      '<text class="eje" x="0" y="-2">'+money(totalDeuda)+'</text>'+
+      '</svg></div>';
+  })();
+
+  // ---------- efecto del monto de golpe ----------
+  if(sinUnico && !sinUnico.estancado){
+    var mesesMenos = sinUnico.meses - plan.meses;
+    var ahorro = sinUnico.interes - plan.interes;
+    if(mesesMenos>0 || ahorro>1){
+      res.innerHTML += '<div class="golpe">Con esos <b>'+money(unico)+'</b> de golpe sales <b>'
+        + mesesMenos + (mesesMenos===1?' mes':' meses') + ' antes</b> y te ahorras <b>'
+        + money(ahorro) + '</b> de intereses.</div>';
+    }
+  }
 
   // ---------- diagnóstico de carga ----------
   // El porcentaje del ingreso que se llevan las cuotas es lo que de verdad
@@ -614,6 +680,7 @@ document.getElementById('add').addEventListener('click',function(){
   if(ins.length)ins[ins.length-1].focus();
 });
 document.getElementById('ingreso').addEventListener('input',calcular);
+document.getElementById('unico').addEventListener('input',calcular);
 document.getElementById('extra').addEventListener('input',function(){
   document.getElementById('extraLbl').textContent=money(+this.value); calcular();
 });
@@ -630,7 +697,7 @@ document.getElementById('btnOlvidar').addEventListener('click',olvidar);
 document.getElementById('bAva').onclick=function(){setEstrategia('avalancha')};
 document.getElementById('bBol').onclick=function(){setEstrategia('bola')};
 document.getElementById('cur').addEventListener('change',function(){
-  var p=this.value.split('|'); CUR.sym=p[0]; document.getElementById('curIng').textContent=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
+  var p=this.value.split('|'); CUR.sym=p[0]; document.getElementById('curIng').textContent=p[0]; document.getElementById('curUni').textContent=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
 });
 
 /* ---------- puertas falsas ----------
@@ -784,7 +851,8 @@ document.addEventListener('visibilitychange', function(){
 function recordar(){
   guardar('mc_plan', {deudas:deudas, extra:+document.getElementById('extra').value,
                       estrategia:estrategia, cur:document.getElementById('cur').value,
-                      ingreso:document.getElementById('ingreso').value});
+                      ingreso:document.getElementById('ingreso').value,
+                      unico:document.getElementById('unico').value});
   pintarAviso();
 }
 function pintarAviso(){
@@ -807,6 +875,7 @@ if(plan && plan.deudas && plan.deudas.length){
   uid = Math.max.apply(null, deudas.map(function(x){return x.id})) || 0;
   document.getElementById('extra').value = plan.extra || 0;
   if(plan.ingreso) document.getElementById('ingreso').value = plan.ingreso;
+  if(plan.unico) document.getElementById('unico').value = plan.unico;
   if(plan.cur){
     var sel=document.getElementById('cur'); sel.value=plan.cur;
     var pr=plan.cur.split('|'); CUR.sym=pr[0]; CUR.loc=LOCS[pr[1]]||'es-PE';
