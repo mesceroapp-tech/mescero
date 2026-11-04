@@ -112,6 +112,29 @@ section{margin:26px 0}
 .slider-head b{font-size:19px;font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 
+/* diagnóstico de carga */
+.ingreso{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.ingreso label{font-size:13.5px;font-weight:650;color:var(--muted);flex:1;min-width:0}
+.ingreso .inp{display:flex;align-items:center;background:var(--surface-2);border:1px solid transparent;
+  border-radius:9px;padding:0 9px;flex:none;width:140px}
+.ingreso .inp:focus-within{border-color:var(--accent);background:var(--surface)}
+.ingreso .pre{color:var(--faint);font-size:13px;font-weight:600}
+.ingreso input{width:100%;min-width:0;background:none;border:none;padding:9px 4px;font-weight:650;
+  font-variant-numeric:tabular-nums;color:inherit;font-family:inherit;font-size:15px}
+.ingreso input:focus{outline:none}
+.ingreso input::-webkit-outer-spin-button,.ingreso input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+.carga{margin-top:14px;padding:16px 17px;border-radius:12px}
+.carga .pct{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.carga .et{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:7px}
+.carga p{font-size:14.5px;margin:9px 0 0;line-height:1.5}
+.carga a{font-weight:700;color:inherit}
+.carga.ok{background:var(--accent-soft);color:var(--accent-ink)}
+.carga.media{background:var(--warn-soft);color:var(--warn)}
+.carga.alta{background:var(--danger-soft);color:var(--danger)}
+.barra{height:7px;border-radius:99px;background:rgba(128,128,128,.22);margin-top:12px;overflow:hidden}
+.barra i{display:block;height:100%;border-radius:99px;background:currentColor;transition:width .3s}
+
 /* result */
 .result{padding:22px 18px;text-align:center;background:var(--surface)}
 .result .lead{font-size:13.5px;font-weight:650;color:var(--muted);letter-spacing:.02em}
@@ -252,6 +275,11 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
     </div>
     <input type="range" id="extra" min="0" max="2000" step="25" value="0">
     <div class="hint" id="stratHint"></div>
+    <div class="ingreso">
+      <label for="ingreso">¿Cuánto te entra al mes? <span style="font-weight:400">(opcional)</span></label>
+      <div class="inp"><span class="pre" id="curIng">S/</span>
+        <input type="number" id="ingreso" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+    </div>
   </div>
 </section>
 
@@ -410,6 +438,7 @@ function render(){
     list.appendChild(el);
   });
   document.getElementById('extraLbl').textContent=money(+document.getElementById('extra').value);
+  document.getElementById('curIng').textContent=CUR.sym;
   calcular();
 }
 function campo(x,k,lbl,pre,suf){
@@ -478,6 +507,34 @@ function calcular(){
 
   var bc = document.getElementById('btnCompartir');
   if(bc) bc.addEventListener('click', function(){ compartir(fechaDe(plan.meses)); });
+
+  // ---------- diagnóstico de carga ----------
+  // El porcentaje del ingreso que se llevan las cuotas es lo que de verdad
+  // separa dos problemas distintos: uno de orden y uno estructural. Bajo 35%
+  // se arregla ordenando; sobre 50% ningún recorte alcanza y el camino es
+  // renegociar. Decirle a alguien "haz un presupuesto" cuando está en el
+  // segundo caso es mandarlo a fracasar.
+  var ing = parseFloat(document.getElementById('ingreso').value) || 0;
+  var cuotas = validas.reduce(function(a,b){return a+b.cuota},0);
+  if(ing > 0 && cuotas > 0){
+    var pct = cuotas/ing*100;
+    var cls, et, txt;
+    if(pct < 35){
+      cls='ok'; et='Manejable';
+      txt='Estás en terreno sano. Lo tuyo es cuestión de orden: ataca primero la tasa más alta y no te gastes la cuota que se libere.';
+    } else if(pct < 50){
+      cls='media'; et='Apretado';
+      txt='Estás al límite de lo recomendable. Todavía se puede ordenar, pero un imprevisto te puede sacar del plan. Vale la pena <a href="/renegociar/">renegociar ahora que estás al día</a>.';
+    } else {
+      cls='alta'; et='Estructural';
+      txt='Esto ya no se arregla recortando gastos: no puedes recortar el '+Math.round(pct)+'% de tu vida. No es falta de disciplina, es falta de margen. El camino es <a href="/renegociar/">renegociar antes de atrasarte</a>, mientras todavía tienes con qué negociar.';
+    }
+    res.innerHTML += '<div class="carga '+cls+'">'+
+      '<div class="pct">'+pct.toFixed(0)+'%</div>'+
+      '<div class="et">'+et+' · de tu ingreso se va en cuotas</div>'+
+      '<div class="barra"><i style="width:'+Math.min(pct,100).toFixed(0)+'%"></i></div>'+
+      '<p>'+txt+'</p></div>';
+  }
 
   // orden de ataque
   var act=validas.slice().sort(function(a,b){
@@ -556,6 +613,7 @@ document.getElementById('add').addEventListener('click',function(){
   var ins=document.querySelectorAll('.debt-top input');
   if(ins.length)ins[ins.length-1].focus();
 });
+document.getElementById('ingreso').addEventListener('input',calcular);
 document.getElementById('extra').addEventListener('input',function(){
   document.getElementById('extraLbl').textContent=money(+this.value); calcular();
 });
@@ -572,7 +630,7 @@ document.getElementById('btnOlvidar').addEventListener('click',olvidar);
 document.getElementById('bAva').onclick=function(){setEstrategia('avalancha')};
 document.getElementById('bBol').onclick=function(){setEstrategia('bola')};
 document.getElementById('cur').addEventListener('change',function(){
-  var p=this.value.split('|'); CUR.sym=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
+  var p=this.value.split('|'); CUR.sym=p[0]; document.getElementById('curIng').textContent=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
 });
 
 /* ---------- puertas falsas ----------
@@ -725,7 +783,8 @@ document.addEventListener('visibilitychange', function(){
    datos financieros ajenos — que es justo lo que promete la portada. */
 function recordar(){
   guardar('mc_plan', {deudas:deudas, extra:+document.getElementById('extra').value,
-                      estrategia:estrategia, cur:document.getElementById('cur').value});
+                      estrategia:estrategia, cur:document.getElementById('cur').value,
+                      ingreso:document.getElementById('ingreso').value});
   pintarAviso();
 }
 function pintarAviso(){
@@ -747,6 +806,7 @@ if(plan && plan.deudas && plan.deudas.length){
   deudas = plan.deudas;
   uid = Math.max.apply(null, deudas.map(function(x){return x.id})) || 0;
   document.getElementById('extra').value = plan.extra || 0;
+  if(plan.ingreso) document.getElementById('ingreso').value = plan.ingreso;
   if(plan.cur){
     var sel=document.getElementById('cur'); sel.value=plan.cur;
     var pr=plan.cur.split('|'); CUR.sym=pr[0]; CUR.loc=LOCS[pr[1]]||'es-PE';
