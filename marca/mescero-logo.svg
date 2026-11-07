@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <title>Mes Cero</title>
+  <rect width="1080" height="1080" fill="#0e1411"/>
+  <circle cx="540" cy="540" r="300" fill="none" stroke="#223029" stroke-width="124"/>
+  <circle cx="540" cy="540" r="300" fill="none" stroke="#3fcf9a" stroke-width="124"
+          stroke-linecap="round" stroke-dasharray="1555 1885"
+          transform="rotate(-90 540 540)"/>
+</svg>
