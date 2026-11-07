@@ -823,10 +823,29 @@ function medir(tipo, detalle, datos){
   }catch(e){}
 }
 
+/* Marca de dueño.
+   Entrar una vez con ?yo=1 marca este navegador; desde ahí sus visitas se
+   anotan con el prefijo "dueño·" y dejan de ensuciar la cuenta. Con ?yo=0 se
+   quita. Hacía falta porque las primeras 89 visitas del sitio eran todas
+   nuestras y no había forma de separarlas de la gente de verdad. */
+(function(){
+  try{
+    var q = new URLSearchParams(location.search);
+    if(!q.has('yo')) return;
+    if(q.get('yo') === '0') localStorage.removeItem('mc_duenio');
+    else guardar('mc_duenio', true);
+    // se borra de la barra de direcciones para no compartir la marca sin querer
+    q.delete('yo');
+    var limpia = location.pathname + (q.toString() ? '?' + q : '') + location.hash;
+    history.replaceState(null, '', limpia);
+  }catch(e){}
+})();
+
 function origen(){
-  var r = document.referrer || '';
-  if(!r) return 'directo';
-  try{ return new URL(r).hostname.replace(/^www\./,''); }catch(e){ return 'otro'; }
+  var r = document.referrer || '', o;
+  if(!r) o = 'directo';
+  else { try{ o = new URL(r).hostname.replace(/^www\./,''); }catch(e){ o = 'otro'; } }
+  return leer('mc_duenio', false) ? 'dueño\u00b7' + o : o;
 }
 
 medir('__visita', origen(), {ancho:window.innerWidth});
