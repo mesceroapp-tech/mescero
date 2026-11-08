@@ -159,6 +159,21 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:3px}
 .stat .v.good{color:var(--accent)}
 .stat .v.bad{color:var(--warn)}
+.avance{margin-top:16px;padding:16px;border-radius:12px;border:1px solid var(--line)}
+.avance .atit{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;margin-bottom:8px}
+.avance p{margin:0 0 8px;font-size:14.5px;line-height:1.55}
+.avance .agrande{font-size:22px;font-weight:700;color:var(--text)}
+.avance .agana{color:var(--accent);font-weight:600}
+.avance .apag{color:var(--muted);font-size:13px}
+.abtn{margin-top:8px;width:100%;padding:13px;border-radius:11px;border:0;
+  background:var(--accent);color:#06201a;font-weight:700;font-size:15px;cursor:pointer}
+.abtn:hover{filter:brightness(1.06)}
+.pagolinea{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.pagoin{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.pagoin input{width:110px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-size:15px;text-align:right}
 .cambiazo{margin-top:16px;padding:16px 16px 14px;border-radius:12px;
   border:1px solid var(--accent);background:var(--accent-soft)}
 .cambiazo .ctit{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
@@ -491,6 +506,95 @@ function campo(x,k,lbl,pre,suf){
 }
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
+/* ---------- seguimiento mensual ----------
+   Una calculadora se usa una vez y se olvida; un seguimiento hace volver.
+   Cada mes la persona registra lo que pagó de verdad y el saldo baja con su
+   número, no con la proyección. Vive en el navegador, igual que el plan: sin
+   cuenta y sin que nada salga del dispositivo. */
+function avance(){ return leer('mc_avance', null); }
+
+function registrarPago(){
+  var vivas = deudas.filter(function(x){ return capitalDe(x)>0 && x.cuota>0; });
+  if(!vivas.length) return;
+  var cuerpo = document.getElementById('mcuerpo');
+  cuerpo.innerHTML = '<h3>¿Cuánto pagaste este mes?</h3>'
+    + '<p class="pq">Viene puesta tu cuota. Si pagaste más, cámbialo: ahí es donde '
+    + 'de verdad adelantas tu fecha.</p>'
+    + vivas.map(function(x){
+        return '<label class="pagolinea"><span>' + (x.nombre ? esc(x.nombre) : 'Deuda') + '</span>'
+             + '<span class="pagoin">' + CUR.sym
+             + '<input type="number" inputmode="decimal" data-id="' + x.id + '" value="' + x.cuota + '"></span></label>';
+      }).join('')
+    + '<button class="mbtn" id="confirmaPago" type="button">Registrar</button>';
+  document.getElementById('velo').hidden = false;
+  document.getElementById('confirmaPago').onclick = function(){
+    var montos = {};
+    cuerpo.querySelectorAll('input[data-id]').forEach(function(i){
+      montos[i.getAttribute('data-id')] = parseFloat(i.value) || 0;
+    });
+    aplicarPago(montos);
+    cerrarVelo();
+  };
+}
+
+function aplicarPago(montos){
+  var antes = fotoDeHoy();
+  var total = 0;
+  deudas.forEach(function(x){
+    var m = montos[x.id]; if(!m) return;
+    total += m;
+    if(x.modo === 'cuotas'){
+      // en modo cuotas el avance se cuenta en cuotas, que es como lo vive la gente
+      x.ncuotas = Math.max(0, (x.ncuotas||0) - 1);
+    } else {
+      var i = tasaMensual(x.tea||0);
+      x.saldo = Math.max(0, (x.saldo||0) * (1+i) - m);
+    }
+  });
+  var a = avance() || { inicio: antes, pagos: [] };
+  a.pagos.push({ cuando: new Date().toISOString().slice(0,10), monto: total });
+  guardar('mc_avance', a);
+  recordar(); render();
+}
+
+function fotoDeHoy(){
+  var v = deudas.map(function(x){
+    return {id:x.id, nombre:x.nombre, saldo:capitalDe(x), cuota:x.cuota, tea:x.tea};
+  }).filter(function(x){ return x.saldo>0 && x.cuota>0; });
+  if(!v.length) return null;
+  var pl = simular(v, +document.getElementById('extra').value,
+                   estrategia==='avalancha'?'avalancha':'bola', 0);
+  return { meses: pl.meses, deuda: v.reduce(function(a,b){return a+b.saldo},0) };
+}
+
+/* El bloque que da la razón para volver el mes que viene. */
+function bloqueAvance(plan, totalDeuda){
+  var a = avance();
+  if(!a || !a.pagos.length){
+    return '<div class="avance"><div class="atit">Vuelve cada mes</div>'
+      + '<p>Registra lo que pagues y verás la cuenta bajar de verdad, con tus números.</p>'
+      + '<button class="abtn" id="btnPago" type="button">Registré mi pago de este mes</button>'
+      + '</div>';
+  }
+  var pagado = a.pagos.reduce(function(s,p){ return s + (p.monto||0); }, 0);
+  var menos = a.inicio ? (a.inicio.meses - plan.meses) : 0;
+  var bajo  = a.inicio ? (a.inicio.deuda - totalDeuda) : 0;
+  return '<div class="avance"><div class="atit">Tu avance</div>'
+    + '<p class="agrande">' + a.pagos.length + ' pago' + (a.pagos.length>1?'s':'') + ' registrado'
+    + (a.pagos.length>1?'s':'') + '</p>'
+    + (a.inicio
+        ? '<p>Empezaste debiendo <b>' + money(a.inicio.deuda) + '</b> con <b>' + a.inicio.meses
+          + ' meses</b> por delante.<br>Hoy debes <b>' + money(totalDeuda) + '</b> y te faltan <b>'
+          + plan.meses + '</b>.</p>'
+          + (bajo > 1 ? '<p class="agana">Has bajado <b>' + money(bajo) + '</b> de deuda'
+             + (menos>0 ? ' y <b>' + menos + ' mes' + (menos>1?'es':'') + '</b> de tu condena' : '')
+             + '.</p>' : '')
+        : '')
+    + '<p class="apag">Llevas <b>' + money(pagado) + '</b> pagados desde que registras.</p>'
+    + '<button class="abtn" id="btnPago" type="button">Registré mi pago de este mes</button>'
+    + '</div>';
+}
+
 /* El cambiazo: todas las calculadoras dicen CUÁNDO sales. Ninguna dice cómo
    salir antes. Si la deuda más cara está muy por encima de lo que cobra el
    mercado, se simula de nuevo con la tasa promedio y se muestra la diferencia.
@@ -578,8 +682,11 @@ function calcular(){
         ? '<div class="saving">Con este plan te ahorras <b>'+money(ahorroInt)+'</b> de intereses y sales <b>'+ahorroMes+' meses antes</b> que pagando solo las cuotas mínimas.</div>'
         : '<div class="saving">Mueve el control de pago extra para ver cuánto adelantas tu fecha de salida.</div>')
     + cambiazo(validas, extra, modo, unico, plan)
+    + bloqueAvance(plan, totalDeuda)
     + '<button class="compartir" id="btnCompartir" type="button">Compartir mi mes cero</button>';
 
+  var bp = document.getElementById('btnPago');
+  if(bp) bp.addEventListener('click', registrarPago);
   var bc = document.getElementById('btnCompartir');
   if(bc) bc.addEventListener('click', function(){ compartir(fechaDe(plan.meses)); });
 
