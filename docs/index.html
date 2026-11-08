@@ -159,6 +159,16 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:3px}
 .stat .v.good{color:var(--accent)}
 .stat .v.bad{color:var(--warn)}
+.cambiazo{margin-top:16px;padding:16px 16px 14px;border-radius:12px;
+  border:1px solid var(--accent);background:var(--accent-soft)}
+.cambiazo .ctit{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;margin-bottom:8px}
+.cambiazo p{margin:0 0 7px;font-size:14.5px;line-height:1.5}
+.cambiazo .cgana{color:var(--text)}
+.cambiazo .cbtn{display:inline-block;margin-top:6px;font-size:14px;font-weight:600;
+  color:var(--accent);text-decoration:none}
+.cambiazo .cbtn:hover{text-decoration:underline}
+.cambiazo .cfuente{margin-top:10px;font-size:11px;color:var(--faint)}
 .compartir{margin-top:13px;width:100%;padding:13px;border-radius:11px;border:1.5px solid var(--accent);
   background:transparent;color:var(--accent);font-weight:700;font-size:15px;
   display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
@@ -347,7 +357,16 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
 </div>
 
 <script>
-var CUR={sym:'S/',loc:'es-PE'};
+var CUR={sym:'S/',loc:'es-PE',pais:'PE'};
+
+/* Qué cobra el mercado, para poder decirle a alguien si le están cobrando de
+   más. Cada número lleva su fuente: un dato de tasas sin fuente no vale nada,
+   y además la gente lo va a querer verificar. Solo está Perú; los demás
+   países entran cuando tengamos el dato oficial de su regulador. */
+var MERCADO={
+  PE:{bancos:31.4, sistema:48.7, digital:112.4,
+      ente:'bancos', fuente:'SBS · créditos de consumo, primer trimestre 2026'}
+};
 var LOCS={PE:'es-PE',MX:'es-MX',CO:'es-CO',CL:'es-CL',AR:'es-AR',US:'en-US',ES:'es-ES'};
 var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 var estrategia='avalancha';
@@ -472,6 +491,37 @@ function campo(x,k,lbl,pre,suf){
 }
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 
+/* El cambiazo: todas las calculadoras dicen CUÁNDO sales. Ninguna dice cómo
+   salir antes. Si la deuda más cara está muy por encima de lo que cobra el
+   mercado, se simula de nuevo con la tasa promedio y se muestra la diferencia.
+   No es una recomendación de producto: es el mismo cálculo con otra tasa. */
+function cambiazo(validas, extra, modo, unico, plan){
+  var ref = MERCADO[CUR.pais];
+  if(!ref || !validas.length) return '';
+  var cara = validas.reduce(function(a,b){ return (b.tea||0)>(a.tea||0)?b:a; });
+  if(!cara.tea || cara.tea <= ref.bancos + 8) return '';
+
+  var alterna = validas.map(function(x){
+    return x.id===cara.id ? {id:x.id,nombre:x.nombre,saldo:x.saldo,cuota:x.cuota,tea:ref.bancos} : x;
+  });
+  var otro = simular(alterna, extra, modo, unico);
+  if(otro.estancado) return '';
+  var menosInt = plan.interes - otro.interes;
+  var menosMes = plan.meses - otro.meses;
+  if(menosInt < 50 && menosMes < 1) return '';
+
+  var quien = cara.nombre ? esc(cara.nombre) : 'tu deuda más cara';
+  return '<div class="cambiazo">'
+    + '<div class="ctit">Te están cobrando de más</div>'
+    + '<p>' + quien + ' te cobra <b>' + cara.tea.toFixed(1).replace('.0','') + '%</b>. '
+    + 'El promedio de los ' + ref.ente + ' es <b>' + ref.bancos + '%</b>.</p>'
+    + '<p class="cgana">Si consigues esa tasa: sales en <b>' + otro.meses + ' meses</b> '
+    + 'en vez de ' + plan.meses + ', y pagas <b>' + money(menosInt) + ' menos</b> de interés.</p>'
+    + '<a class="cbtn" href="/renegociar/">Cómo pedir que te la bajen &rarr;</a>'
+    + '<div class="cfuente">' + ref.fuente + '</div>'
+    + '</div>';
+}
+
 function calcular(){
   var validas=deudas.map(function(x){
     return {id:x.id,nombre:x.nombre,saldo:capitalDe(x),cuota:x.cuota,tea:x.tea};
@@ -527,6 +577,7 @@ function calcular(){
       : (ahorroInt>1||ahorroMes>0)
         ? '<div class="saving">Con este plan te ahorras <b>'+money(ahorroInt)+'</b> de intereses y sales <b>'+ahorroMes+' meses antes</b> que pagando solo las cuotas mínimas.</div>'
         : '<div class="saving">Mueve el control de pago extra para ver cuánto adelantas tu fecha de salida.</div>')
+    + cambiazo(validas, extra, modo, unico, plan)
     + '<button class="compartir" id="btnCompartir" type="button">Compartir mi mes cero</button>';
 
   var bc = document.getElementById('btnCompartir');
@@ -699,7 +750,7 @@ document.getElementById('btnOlvidar').addEventListener('click',olvidar);
 document.getElementById('bAva').onclick=function(){setEstrategia('avalancha')};
 document.getElementById('bBol').onclick=function(){setEstrategia('bola')};
 document.getElementById('cur').addEventListener('change',function(){
-  var p=this.value.split('|'); CUR.sym=p[0]; document.getElementById('curIng').textContent=p[0]; document.getElementById('curUni').textContent=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; render();
+  var p=this.value.split('|'); CUR.sym=p[0]; document.getElementById('curIng').textContent=p[0]; document.getElementById('curUni').textContent=p[0]; CUR.loc=LOCS[p[1]]||'es-PE'; CUR.pais=p[1]||'PE'; render();
 });
 
 /* ---------- puertas falsas ----------
