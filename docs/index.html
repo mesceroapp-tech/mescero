@@ -159,6 +159,12 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:3px}
 .stat .v.good{color:var(--accent)}
 .stat .v.bad{color:var(--warn)}
+.ejemplo{margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
+  color:var(--accent);font-size:15px;font-weight:600;font-family:inherit}
+.ejemplo:hover{text-decoration:underline}
+.como{margin-top:30px}
+.como video{display:block;width:100%;max-width:300px;margin:12px auto 0;
+  border-radius:16px;border:1px solid var(--line);background:var(--bg)}
 .avance{margin-top:16px;padding:16px;border-radius:12px;border:1px solid var(--line)}
 .avance .atit{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--muted);font-weight:700;margin-bottom:8px}
@@ -291,7 +297,14 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   <h1>¿En qué mes sales de tus deudas?</h1>
   <p>Pon tus deudas y te digo la fecha exacta en que quedas libre, cuánto interés vas a pagar y en qué orden conviene atacarlas.</p>
   <div class="privacy">🔒 Nada sale de tu celular. No hay cuenta ni registro.</div>
+  <button class="ejemplo" id="btnEjemplo" type="button" hidden>Ver un ejemplo &rarr;</button>
 </div>
+
+<section class="como" id="como">
+  <div class="sec-title">Cómo funciona</div>
+  <video src="como-funciona.mp4" autoplay muted loop playsinline preload="metadata"
+         aria-label="Demostración: poner una deuda, ver la fecha de salida y registrar los pagos"></video>
+</section>
 
 <section>
   <div class="sec-title">Tus deudas</div>
@@ -496,6 +509,7 @@ function render(){
   document.getElementById('curIng').textContent=CUR.sym;
   document.getElementById('curUni').textContent=CUR.sym;
   calcular();
+  pintarEjemplo();
 }
 function campo(x,k,lbl,pre,suf){
   var v=(x[k]===null||x[k]===0||x[k]===undefined)?'':x[k];
@@ -1045,6 +1059,26 @@ function olvidar(){
   deudas=[nuevaDeuda(),nuevaDeuda()]; uid=2;
   document.getElementById('extra').value=0;
   render();
+}
+
+/* Un ejemplo cargado de un toque. Mucha gente no sabe por dónde empezar y se
+   va antes de escribir nada: la mediana de permanencia son 6 segundos. Ver el
+   resultado con números ajenos enseña más rápido que cualquier instructivo. */
+function verEjemplo(){
+  deudas = [nuevaDeuda('Tarjeta', 9500, 550, 95), nuevaDeuda('Préstamo', 6000, 400, 40)];
+  render();
+  medir('__ejemplo', origen(), {});
+  var r = document.getElementById('result');
+  if(r) r.scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('btnEjemplo').addEventListener('click', verEjemplo);
+
+/* Solo se ofrece mientras no haya nada escrito: si ya puso sus deudas,
+   cargarle un ejemplo encima sería borrarle el trabajo. */
+function pintarEjemplo(){
+  var b = document.getElementById('btnEjemplo');
+  if(!b) return;
+  b.hidden = deudas.some(function(x){ return capitalDe(x)>0 || x.cuota>0 || x.nombre; });
 }
 
 /* arranque */
