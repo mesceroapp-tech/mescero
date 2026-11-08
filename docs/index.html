@@ -164,6 +164,17 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
   color:var(--accent);font-size:15px;font-weight:600;font-family:inherit}
 .ejemplo:hover{text-decoration:underline}
 .como{margin-top:30px}
+.nuevo{margin-top:30px}
+.cambios{list-style:none;margin:14px 0 0;padding:0}
+.cambios li{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);
+  font-size:14.5px;line-height:1.55}
+.cambios li:last-child{border-bottom:0}
+.cambios li span{flex:0 0 52px;color:var(--faint);font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;padding-top:3px}
+.cambios li b{color:var(--text)}
+.cambios li div{color:var(--muted)}
+.cambios a{color:var(--accent)}
+.nuevo-pie{margin:14px 0 0;font-size:13px;color:var(--faint)}
 .como video{display:block;width:100%;max-width:300px;margin:12px auto 0;
   border-radius:16px;border:1px solid var(--line);background:var(--bg)}
 .avance{margin-top:16px;padding:16px;border-radius:12px;border:1px solid var(--line)}
@@ -358,6 +369,18 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   <div class="sec-title">Cómo funciona</div>
   <video src="como-funciona.mp4" autoplay muted loop playsinline preload="metadata"
          aria-label="Demostración: poner una deuda, ver la fecha de salida y registrar los pagos"></video>
+</section>
+
+<section class="nuevo" id="nuevo">
+  <div class="sec-title">Qué hay de nuevo</div>
+  <ul class="cambios">
+    <li><span>8 nov</span><div><b>Ahora puedes registrar tus pagos.</b> Cada mes marcas lo que pagaste y la cuenta baja con tus números reales, no con la proyección. Aparece debajo de tu resultado.</div></li>
+    <li><span>8 nov</span><div><b>Te decimos si tu banco te cobra de más.</b> Comparamos tu tasa con el promedio del mercado y te mostramos cuántos meses y cuánto interés te costaría esa diferencia.</div></li>
+    <li><span>8 nov</span><div><b>Guía para el BCP.</b> Qué pedir según si estás al día o en mora, y cómo hacerlo desde la app sin llamar. <a href="/bancos/bcp.html">Verla</a></div></li>
+    <li><span>4 nov</span><div><b>Artículo:</b> por qué pagando el mínimo de la tarjeta no sales nunca. <a href="/articulos/pago-minimo-tarjeta.html">Leerlo</a></div></li>
+    <li><span>3 nov</span><div><b>Mes Cero abrió.</b> Gratis, sin registro, y nada sale de tu celular.</div></li>
+  </ul>
+  <p class="nuevo-pie">Esto se sigue construyendo. Si te falta algo, dínoslo en <a href="#pro">lo que viene</a>.</p>
 </section>
 
 <section class="pro" id="pro" hidden>
