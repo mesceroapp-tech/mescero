@@ -76,4 +76,5 @@
     <priority>0.3</priority>
   </url>
   <url><loc>https://mescero.com/bancos/bcp.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mescero.com/bancos/interbank.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

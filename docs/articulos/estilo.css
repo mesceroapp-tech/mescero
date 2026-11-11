@@ -55,3 +55,12 @@ footer a{color:var(--muted)}
   text-decoration:none;color:var(--text);font-weight:650}
 .otros a:last-child{border-bottom:none}
 .otros a span{display:block;font-weight:400;font-size:14.5px;color:var(--muted);margin-top:3px}
+
+/* En el celular, tocar algo sin que responda se siente roto. El hundido
+   dura lo justo para notarse y no para estorbar. */
+.cta,.otros a{transition:transform .12s ease-out}
+.cta:active,.otros a:active{transform:scale(.985)}
+@media (prefers-reduced-motion:reduce){
+  .cta,.otros a{transition:none}
+  .cta:active,.otros a:active{transform:none}
+}
