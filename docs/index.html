@@ -4,9 +4,11 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#0e1411">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f7f5">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1411">
+<meta name="color-scheme" content="light dark">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Mes Cero — Calculadora para salir de deudas</title>
 <meta name="description" content="Calcula en qué mes exacto sales de tus deudas. Te decimos el orden en que pagarlas para ahorrar más intereses. Gratis y tus datos nunca salen de tu celular.">
 <link rel="canonical" href="https://mescero.com/">
@@ -48,11 +50,18 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
 }
 *{box-sizing:border-box}
+/* Base táctil: esto se usa casi solo desde el celular.
+   El destello gris al tocar es la señal más fuerte de "esto es una web";
+   overscroll-behavior evita que al jalar hacia abajo se recargue la página
+   en pleno llenado de deudas. */
+html{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain}
 body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--text);
   font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   -webkit-text-size-adjust:100%}
 .wrap{max-width:720px;margin:0 auto;padding:0 18px}
 h1,h2,h3{line-height:1.2;margin:0}
+button,a.puerta,a.cta,a.boton{touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 button{font:inherit;cursor:pointer;transition:transform .12s ease-out}
 /* Respuesta al toque: en el celular, un botón que no se hunde se siente roto. */
 button:active,.cta:active,a.boton:active{transform:scale(.97)}
@@ -85,7 +94,6 @@ section{margin:26px 0}
   padding:5px 2px;font-weight:650;font-size:16px}
 .debt-top input:focus{outline:none;border-bottom-color:var(--accent)}
 .del{background:none;border:none;color:var(--faint);font-size:19px;line-height:1;padding:4px 6px;border-radius:8px}
-.del:hover{color:var(--danger);background:var(--danger-soft)}
 .modo{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:2px;gap:2px;margin-bottom:11px}
 .modo button{border:none;background:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:650;color:var(--faint)}
 .modo button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12)}
@@ -107,7 +115,6 @@ section{margin:26px 0}
 
 .add{width:100%;padding:13px;border:1.5px dashed var(--line);background:none;color:var(--muted);
   border-radius:var(--radius);font-weight:650}
-.add:hover{border-color:var(--accent);color:var(--accent)}
 
 /* controls */
 .ctrl{padding:16px}
@@ -138,7 +145,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .ingreso .inp:focus-within{border-color:var(--accent);background:var(--surface)}
 .ingreso .pre{color:var(--faint);font-size:13px;font-weight:600}
 .ingreso input{width:100%;min-width:0;background:none;border:none;padding:9px 4px;font-weight:650;
-  font-variant-numeric:tabular-nums;color:inherit;font-family:inherit;font-size:15px}
+  font-variant-numeric:tabular-nums;color:inherit;font-family:inherit;font-size:16px}
 .ingreso input:focus{outline:none}
 .ingreso input::-webkit-outer-spin-button,.ingreso input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
@@ -166,7 +173,6 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v.bad{color:var(--warn)}
 .ejemplo{margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
   color:var(--accent);font-size:15px;font-weight:600;font-family:inherit}
-.ejemplo:hover{text-decoration:underline}
 .como{margin-top:30px}
 .nuevo{margin-top:30px}
 .cambios{list-style:none;margin:14px 0 0;padding:0}
@@ -190,12 +196,11 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .avance .apag{color:var(--muted);font-size:13px}
 .abtn{margin-top:8px;width:100%;padding:13px;border-radius:11px;border:0;
   background:var(--accent);color:#06201a;font-weight:700;font-size:15px;cursor:pointer}
-.abtn:hover{filter:brightness(1.06)}
 .pagolinea{display:flex;justify-content:space-between;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
 .pagoin{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
 .pagoin input{width:110px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);
-  background:var(--bg);color:var(--text);font-size:15px;text-align:right}
+  background:var(--bg);color:var(--text);font-size:16px;text-align:right}
 .cambiazo{margin-top:16px;padding:16px 16px 14px;border-radius:12px;
   border:1px solid var(--accent);background:var(--accent-soft)}
 .cambiazo .ctit{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
@@ -204,12 +209,10 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .cambiazo .cgana{color:var(--text)}
 .cambiazo .cbtn{display:inline-block;margin-top:6px;font-size:14px;font-weight:600;
   color:var(--accent);text-decoration:none}
-.cambiazo .cbtn:hover{text-decoration:underline}
 .cambiazo .cfuente{margin-top:10px;font-size:11px;color:var(--faint)}
 .compartir{margin-top:13px;width:100%;padding:13px;border-radius:11px;border:1.5px solid var(--accent);
   background:transparent;color:var(--accent);font-weight:700;font-size:15px;
   display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
-.compartir:hover{background:var(--accent-soft)}
 .compartir.listo{border-color:var(--line);color:var(--muted)}
 .saving{margin-top:14px;padding:13px;border-radius:11px;background:var(--accent-soft);color:var(--accent-ink);font-size:14.5px;font-weight:650}
 
@@ -246,7 +249,6 @@ tr.done td{color:var(--accent);font-weight:650}
 .puerta{display:flex;align-items:center;gap:11px;text-align:left;padding:13px 14px;
   background:var(--surface);border:1px solid var(--line);border-radius:12px;
   color:var(--text);box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
-.puerta:hover{border-color:var(--accent);transform:translateY(-1px)}
 .puerta .ic{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent-soft);
   color:var(--accent-ink);display:grid;place-items:center;font-size:15px}
 .puerta .tx{min-width:0}
@@ -254,20 +256,20 @@ tr.done td{color:var(--accent);font-weight:650}
 .puerta .ds{display:block;font-size:12px;color:var(--faint);margin-top:2px;line-height:1.35}
 
 .velo{position:fixed;inset:0;background:rgba(10,20,16,.55);backdrop-filter:blur(3px);
-  display:grid;place-items:center;padding:18px;z-index:50}
+  display:grid;place-items:center;z-index:50;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px))}
 .velo[hidden]{display:none!important}
 .modal{background:var(--surface);border-radius:17px;max-width:420px;width:100%;
   padding:24px 22px;box-shadow:0 24px 60px -12px rgba(0,0,0,.5);position:relative}
 .modal .cerrar{position:absolute;top:11px;right:13px;background:none;border:none;
   font-size:23px;line-height:1;color:var(--faint);padding:4px 7px;border-radius:8px}
-.modal .cerrar:hover{color:var(--text);background:var(--surface-2)}
 .modal h3{font-size:19px;letter-spacing:-.015em;padding-right:28px}
 .modal .pq{color:var(--muted);font-size:14.5px;margin:9px 0 0}
 .modal .oferta{margin:15px 0;padding:12px 14px;border-radius:11px;background:var(--accent-soft);
   color:var(--accent-ink);font-size:14px;font-weight:650}
 .fmail{display:flex;gap:8px;margin-top:4px}
 .fmail input{flex:1;min-width:0;background:var(--surface-2);border:1.5px solid var(--line);
-  border-radius:10px;padding:11px 13px;font-size:15px}
+  border-radius:10px;padding:11px 13px;font-size:16px}
 .fmail input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
 .fmail button{background:var(--accent);color:var(--surface);border:none;border-radius:10px;
   padding:11px 17px;font-weight:700}
@@ -286,12 +288,25 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   flex-wrap:wrap;gap:6px 12px}
 .nav{margin-left:14px;white-space:nowrap;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;
   border-bottom:1.5px solid transparent;padding-bottom:1px}
-.nav:hover{color:var(--accent);border-bottom-color:var(--accent)}
 .guardado{font-size:12.5px;color:var(--faint);text-align:center;margin-top:9px}
 .guardado button{background:none;border:none;color:var(--faint);text-decoration:underline;
   font-size:12.5px;padding:0 2px;cursor:pointer}
-.guardado button:hover{color:var(--danger)}
 .cursel{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;font-weight:650}
+
+/* El toque no tiene hover: el navegador lo finge en el primer toque y lo
+   deja pegado. Solo para punteros de verdad; en el celular manda :active. */
+@media (hover:hover) and (pointer:fine){
+  .del:hover{color:var(--danger);background:var(--danger-soft)}
+  .add:hover{border-color:var(--accent);color:var(--accent)}
+  .ejemplo:hover{text-decoration:underline}
+  .abtn:hover{filter:brightness(1.06)}
+  .cambiazo .cbtn:hover{text-decoration:underline}
+  .compartir:hover{background:var(--accent-soft)}
+  .puerta:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .modal .cerrar:hover{color:var(--text);background:var(--surface-2)}
+  .nav:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .guardado button:hover{color:var(--danger)}
+}
 </style>
 </head>
 <body>
