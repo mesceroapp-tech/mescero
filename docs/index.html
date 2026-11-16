@@ -173,6 +173,19 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .stat .v.bad{color:var(--warn)}
 .ejemplo{margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
   color:var(--accent);font-size:15px;font-weight:600;font-family:inherit}
+
+/* Barra de "números de ejemplo". La portada ahora arranca con un caso ya
+   cargado: antes abría con un formulario en cero, o sea pedía trabajo antes
+   de dar nada, y el resultado — que es lo único que convence — quedaba dos
+   pantallas más abajo. Tiene que quedar clarísimo que esos números no son
+   suyos, o la gente cree que la calculadora se los inventó. */
+.esejemplo{margin-top:16px;padding:12px 14px;border-radius:12px;
+  background:var(--accent-soft);border:1px solid var(--line);
+  font-size:14.5px;line-height:1.5;color:var(--text)}
+.esejemplo .fec{color:var(--accent-ink);font-weight:700;white-space:nowrap}
+.esejemplo button{margin-top:8px;display:block;background:none;border:0;padding:0;
+  cursor:pointer;color:var(--accent);font-size:14.5px;font-weight:700;
+  font-family:inherit;touch-action:manipulation}
 .como{margin-top:30px}
 .nuevo{margin-top:30px}
 .cambios{list-style:none;margin:14px 0 0;padding:0}
@@ -330,6 +343,12 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   <p>Pon tus deudas y te digo la fecha exacta en que quedas libre, cuánto interés vas a pagar y en qué orden conviene atacarlas.</p>
   <div class="privacy">🔒 Nada sale de tu celular. No hay cuenta ni registro.</div>
   <button class="ejemplo" id="btnEjemplo" type="button" hidden>Ver un ejemplo &rarr;</button>
+  <div class="esejemplo" id="barraEjemplo" hidden>
+    Ejemplo: una tarjeta y un préstamo. Con esos números el mes cero es
+    <span class="fec" id="ejFecha">—</span>. Cambia los montos por los tuyos
+    y la fecha se recalcula sola.
+    <button type="button" id="btnEnBlanco">Prefiero empezar en blanco &rarr;</button>
+  </div>
 </div>
 
 
@@ -447,6 +466,10 @@ var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','se
 var estrategia='avalancha';
 var deudas=[];
 var uid=0;
+/* Los montos que se ven al entrar son de ejemplo, no de la persona. Mientras
+   esto sea true no se guarda nada ni se dice "tus deudas quedan guardadas":
+   sería mentirle sobre datos que no escribió. Se apaga en cuanto toca algo. */
+var esEjemplo=false;
 
 function money(n){
   if(!isFinite(n))return '—';
@@ -729,6 +752,9 @@ function calcular(){
   var ahorroMes=baseRota?0:(base.meses-plan.meses);
   var totalDeuda=validas.reduce(function(a,b){return a+b.saldo},0);
 
+  var ef=document.getElementById('ejFecha');
+  if(ef) ef.textContent=fechaDe(plan.meses);
+
   res.innerHTML=
     '<div class="lead">Tu mes cero</div>'+
     '<div class="bigdate">'+fechaDe(plan.meses)+'</div>'+
@@ -844,6 +870,7 @@ function calcular(){
   document.getElementById('pro').hidden=false;
   pintarPuertas();
   recordar();
+  pintarEjemplo();
 
   // tabla mes a mes
   var t=document.getElementById('tbl');
@@ -883,6 +910,7 @@ document.getElementById('list').addEventListener('input',function(e){
   if(!id||!k)return;
   var d=deudas.filter(function(x){return x.id===id})[0]; if(!d)return;
   d[k]=(k==='nombre')?e.target.value:(parseFloat(e.target.value)||0);
+  esEjemplo=false;
   calcular();
 });
 document.getElementById('list').addEventListener('click',function(e){
@@ -1089,6 +1117,10 @@ document.addEventListener('visibilitychange', function(){
    Es el 90% de lo que daría una cuenta, sin convertirnos en custodios de
    datos financieros ajenos — que es justo lo que promete la portada. */
 function recordar(){
+  /* Mientras sean los números de ejemplo no se guarda nada: si no, la persona
+     que solo mira y se va vuelve y encuentra deudas que nunca escribió, ya
+     indistinguibles de las suyas. */
+  if(esEjemplo){ pintarAviso(); return; }
   guardar('mc_plan', {deudas:deudas, extra:+document.getElementById('extra').value,
                       estrategia:estrategia, cur:document.getElementById('cur').value,
                       ingreso:document.getElementById('ingreso').value,
@@ -1098,10 +1130,11 @@ function recordar(){
 function pintarAviso(){
   var a=document.getElementById('aviso-guardado');
   if(!a) return;
-  var hay = deudas.some(function(x){return capitalDe(x)>0 && x.cuota>0});
+  var hay = !esEjemplo && deudas.some(function(x){return capitalDe(x)>0 && x.cuota>0});
   a.hidden = !hay;
 }
 function olvidar(){
+  esEjemplo=false;
   try{ localStorage.removeItem('mc_plan'); }catch(e){}
   deudas=[nuevaDeuda(),nuevaDeuda()]; uid=2;
   document.getElementById('extra').value=0;
@@ -1113,19 +1146,28 @@ function olvidar(){
    resultado con números ajenos enseña más rápido que cualquier instructivo. */
 function verEjemplo(){
   deudas = [nuevaDeuda('Tarjeta', 9500, 550, 95), nuevaDeuda('Préstamo', 6000, 400, 40)];
+  esEjemplo = true;
   render();
   medir('__ejemplo', origen(), {});
   var r = document.getElementById('result');
   if(r) r.scrollIntoView({behavior:'smooth', block:'start'});
 }
-document.getElementById('btnEjemplo').addEventListener('click', verEjemplo);
+document.getElementById('btnEjemplo').addEventListener('click', function(){
+  esEjemplo=false; verEjemplo(); esEjemplo=true; pintarEjemplo();
+});
+document.getElementById('btnEnBlanco').addEventListener('click', function(){
+  olvidar(); medir('__enblanco', origen(), {});
+  document.querySelector('#list input').focus();
+});
 
 /* Solo se ofrece mientras no haya nada escrito: si ya puso sus deudas,
    cargarle un ejemplo encima sería borrarle el trabajo. */
 function pintarEjemplo(){
   var b = document.getElementById('btnEjemplo');
+  var barra = document.getElementById('barraEjemplo');
+  if(barra) barra.hidden = !esEjemplo;
   if(!b) return;
-  b.hidden = deudas.some(function(x){ return capitalDe(x)>0 || x.cuota>0 || x.nombre; });
+  b.hidden = esEjemplo || deudas.some(function(x){ return capitalDe(x)>0 || x.cuota>0 || x.nombre; });
 }
 
 /* arranque */
@@ -1142,7 +1184,11 @@ if(plan && plan.deudas && plan.deudas.length){
   }
   estrategia = plan.estrategia || 'avalancha';
 } else {
-  deudas=[nuevaDeuda('',0,0,null),nuevaDeuda('',0,0,null)];
+  /* Primera visita: entra con un caso cargado para que se vea un resultado
+     antes de pedirle que escriba nada. La mediana de permanencia son 6
+     segundos — no alcanzan para llenar seis campos en blanco. */
+  deudas=[nuevaDeuda('Tarjeta',9500,550,95), nuevaDeuda('Préstamo',6000,400,40)];
+  esEjemplo=true;
 }
 setEstrategia(estrategia);
 render();
