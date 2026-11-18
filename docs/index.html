@@ -1232,10 +1232,19 @@ medir('__visita', origen(), {ancho:window.innerWidth});
 function despedirse(){
   if(SALIDA_ENVIADA) return;
   SALIDA_ENVIADA = true;
+  /* `uso` tiene que significar "esta persona escribió SUS números". Desde
+     que la portada abre con el ejemplo cargado, USO se encendía solo y
+     todas las visitas salían con uso:true y deudas:2 — el dato dejó de
+     distinguir al que calcula del que solo mira. `esEjemplo` es lo que
+     separa una cosa de la otra. */
+  var propias = !esEjemplo;
   medir('__salida', origen(), {
     segundos: Math.round((Date.now()-T0)/1000),
-    uso: USO,
-    deudas: deudas.filter(function(x){return capitalDe(x)>0 && x.cuota>0}).length
+    uso: USO && propias,
+    propias: propias,
+    deudas: propias
+      ? deudas.filter(function(x){return capitalDe(x)>0 && x.cuota>0}).length
+      : 0
   });
 }
 window.addEventListener('pagehide', despedirse);
