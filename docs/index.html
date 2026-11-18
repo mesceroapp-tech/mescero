@@ -1117,6 +1117,13 @@ function abrirPuerta(p){
   clics[p.id]=(clics[p.id]||0)+1;
   guardar('mc_clics',clics);
 
+  /* El clic se registra apenas ocurre, no solo si además deja el correo.
+     Durante quince días el conteo vivió únicamente en su navegador y solo
+     viajaba junto con el email, así que no había forma de distinguir
+     "nadie la tocó" de "la tocaron y no dieron el correo". Son dos
+     respuestas opuestas a la pregunta de qué construir. */
+  medir('__puerta', p.id, {n: clics[p.id]});
+
   var yaDio=leer('mc_correo','');
   var cuerpo=document.getElementById('mcuerpo');
 
