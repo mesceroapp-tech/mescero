@@ -186,6 +186,39 @@ input[type=range]{width:100%;accent-color:var(--accent);height:26px}
 .esejemplo button{margin-top:8px;display:block;background:none;border:0;padding:0;
   cursor:pointer;color:var(--accent);font-size:14.5px;font-weight:700;
   font-family:inherit;touch-action:manipulation}
+/* ---------- contador de días de mora ----------
+   Es el único dato de la página que cambia una decisión HOY: saber que
+   quedan diez días antes de caer a Deficiente es lo que hace que alguien
+   llame al banco esta semana y no el mes que viene. Por eso va en la
+   portada y no enterrado en /renegociar/. */
+.mora{margin-top:30px}
+.mora-card{padding:18px 17px}
+.mora-lede{margin:0 0 14px;font-size:15px;line-height:1.55;color:var(--muted)}
+.mora-campo{display:block;font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--faint);margin-bottom:7px}
+.mora-input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--line);
+  border-radius:11px;background:var(--surface-2);color:inherit;font-family:inherit;
+  /* 16px es el mínimo: por debajo iOS hace zoom al enfocar y no vuelve */
+  font-size:16px;line-height:1.3}
+.mora-input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.mora-dias{margin:16px 0 4px;font-size:15px;color:var(--muted)}
+.mora-dias b{color:var(--text);font-size:17px}
+.mora-ahora{font-size:27px;font-weight:700;letter-spacing:-.01em;margin:0 0 3px}
+.mora-falta{margin:0 0 14px;font-size:15px;color:var(--muted)}
+.mora-falta b{color:var(--warn)}
+.mora-tabla{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.mora-tabla li{display:flex;align-items:baseline;gap:10px;padding:9px 2px;
+  border-bottom:1px solid var(--line);font-size:14.5px}
+.mora-tabla .t{font-weight:600;min-width:92px}
+.mora-tabla .r{color:var(--faint);font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px}
+.mora-tabla .m{margin-left:auto;font-size:12.5px;color:var(--faint)}
+.mora-tabla li.pas{opacity:.45}
+.mora-tabla li.aqui{background:var(--accent-soft);border-radius:8px;padding-left:9px;padding-right:9px}
+.mora-tabla li.aqui .t{color:var(--accent-ink)}
+.mora-tabla li.aqui .m{color:var(--accent-ink);font-weight:700}
+.mora-cta{display:block;margin-top:14px;font-size:15px;font-weight:600;color:var(--accent)}
+.mora-pie{margin:13px 0 0;font-size:12.5px;line-height:1.5;color:var(--faint)}
+
 .como{margin-top:30px}
 .nuevo{margin-top:30px}
 .cambios{list-style:none;margin:14px 0 0;padding:0}
@@ -403,6 +436,21 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
   </details>
 </section>
 
+<section class="mora" id="mora">
+  <div class="sec-title">¿Cuántos días de atraso llevas?</div>
+  <div class="card mora-card">
+    <p class="mora-lede">La SBS te clasifica por <b>días de atraso</b>, no por cuánto debes. Y esa
+      clasificación la ven todos los bancos durante años, no solo el tuyo. Pon la fecha en que
+      venció tu cuota y te digo exactamente dónde estás parado.</p>
+    <label class="mora-campo" for="moraFecha">Fecha en que venció tu cuota</label>
+    <input type="date" id="moraFecha" class="mora-input">
+    <div id="moraSalida" hidden></div>
+    <p class="mora-pie">Aplica a créditos de consumo: tarjetas y préstamos personales. Las fechas
+      son las de la clasificación del deudor de la SBS; tu banco puede reportar con algún día de
+      diferencia según cuándo cierre su mes.</p>
+  </div>
+</section>
+
 <section class="como" id="como">
   <div class="sec-title">Cómo funciona</div>
   <video src="como-funciona.mp4" autoplay muted loop playsinline preload="metadata"
@@ -412,10 +460,12 @@ footer{padding:28px 0 40px;color:var(--faint);font-size:13px;text-align:center;b
 <section class="nuevo" id="nuevo">
   <div class="sec-title">Qué hay de nuevo</div>
   <ul class="cambios">
-    <li><span>8 nov</span><div><b>Ahora puedes registrar tus pagos.</b> Cada mes marcas lo que pagaste y la cuenta baja con tus números reales, no con la proyección. Aparece debajo de tu resultado.</div></li>
-    <li><span>8 nov</span><div><b>Te decimos si tu banco te cobra de más.</b> Comparamos tu tasa con el promedio del mercado y te mostramos cuántos meses y cuánto interés te costaría esa diferencia.</div></li>
+    <li><span>18 nov</span><div><b>Contador de días de mora.</b> Pones la fecha en que venció tu cuota y te decimos en qué categoría de la SBS estás hoy y cuántos días te faltan para caer a la siguiente. Es el dato que decide si conviene llamar al banco esta semana o la otra. <a href="#mora">Probarlo</a></div></li>
+    <li><span>16 nov</span><div><b>La portada abre con un ejemplo puesto.</b> Entras y ya ves una fecha de salida calculada, antes de escribir nada. Cambias los montos por los tuyos y se recalcula sola.</div></li>
     <li><span>13 nov</span><div><b>Guía para el BBVA.</b> El propio banco dice hasta cuándo puedes pedir reprogramación: 8 días de mora. Pasado eso, cambia el producto y cambia tu historial. <a href="/bancos/bbva.html">Verla</a></div></li>
     <li><span>11 nov</span><div><b>Guía para Interbank.</b> La central no reprograma: el que resuelve es cobranza, y tiene otro número. También el WhatsApp que atiende de noche. <a href="/bancos/interbank.html">Verla</a></div></li>
+    <li><span>8 nov</span><div><b>Ahora puedes registrar tus pagos.</b> Cada mes marcas lo que pagaste y la cuenta baja con tus números reales, no con la proyección. Aparece debajo de tu resultado.</div></li>
+    <li><span>8 nov</span><div><b>Te decimos si tu banco te cobra de más.</b> Comparamos tu tasa con el promedio del mercado y te mostramos cuántos meses y cuánto interés te costaría esa diferencia.</div></li>
     <li><span>8 nov</span><div><b>Guía para el BCP.</b> Qué pedir según si estás al día o en mora, y cómo hacerlo desde la app sin llamar. <a href="/bancos/bcp.html">Verla</a></div></li>
     <li><span>4 nov</span><div><b>Artículo:</b> por qué pagando el mínimo de la tarjeta no sales nunca. <a href="/articulos/pago-minimo-tarjeta.html">Leerlo</a></div></li>
     <li><span>3 nov</span><div><b>Mes Cero abrió.</b> Gratis, sin registro, y nada sale de tu celular.</div></li>
@@ -882,6 +932,81 @@ function calcular(){
   }).join('');
   t.innerHTML=head+body;
 }
+
+/* ---------- contador de días de mora ----------
+   Los tramos son los de la clasificación del deudor de la SBS para créditos
+   de consumo. No dependen del banco ni de la tasa, así que esto no se
+   desactualiza: es la única parte del sitio que no hay que mantener. */
+var TRAMOS = [
+  {nom:'Normal',     desde:0,   hasta:8,    que:'Estás al día a ojos de la SBS. Es el mejor momento para pedir una reprogramación: te la dan sin que quede marcada.'},
+  {nom:'CPP',        desde:9,   hasta:30,   que:'Con Problemas Potenciales. Todavía se arregla, pero ya aparece en tu reporte. Llama ahora, no esperes a la siguiente cuota.'},
+  {nom:'Deficiente', desde:31,  hasta:60,   que:'Acá ya no se habla de reprogramar sino de refinanciar, y eso queda marcado en tu historial durante años.'},
+  {nom:'Dudoso',     desde:61,  hasta:120,  que:'El banco ya está provisionando tu deuda como probable pérdida. Casi seguro pasó a cobranza externa.'},
+  {nom:'Pérdida',    desde:121, hasta:null, que:'La deuda se da por incobrable. Sigue existiendo y sigue sumando, pero el banco ya la castigó contablemente.'}
+];
+
+function pintarMora(){
+  var inp = document.getElementById('moraFecha');
+  var out = document.getElementById('moraSalida');
+  if(!inp || !out) return;
+  var v = inp.value;
+  if(!v){ out.hidden = true; return; }
+
+  /* La fecha se parte a mano: new Date('2026-10-28') se interpreta como UTC
+     y en Lima eso adelanta un día el resultado. */
+  var pz = v.split('-');
+  var f = new Date(+pz[0], +pz[1]-1, +pz[2]);
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var dias = Math.round((hoy - f) / 86400000);
+
+  if(dias < 0){
+    out.innerHTML =
+      '<p class="mora-dias">Tu cuota todavía no vence: <b>te faltan ' + (-dias) +
+      (-dias === 1 ? ' día' : ' días') + '</b>.</p>' +
+      '<p class="mora-falta">Si ya sabes que no vas a llegar, este es el momento que más vale. ' +
+      'Pedir una reprogramación <b>antes</b> de vencer no queda marcado en tu historial; pedirla después, sí.</p>' +
+      '<a class="mora-cta" href="/renegociar/peru.html">Qué decir cuando llames &rarr;</a>';
+    out.hidden = false;
+    medir('__mora', 'antes', {});
+    return;
+  }
+
+  var i = 0;
+  for(var k = 0; k < TRAMOS.length; k++){
+    if(TRAMOS[k].hasta === null || dias <= TRAMOS[k].hasta){ i = k; break; }
+  }
+  var t = TRAMOS[i];
+  var sig = TRAMOS[i+1];
+  var faltan = sig ? (t.hasta + 1 - dias) : null;
+
+  var filas = TRAMOS.map(function(x, n){
+    var cls = n < i ? 'pas' : (n === i ? 'aqui' : '');
+    var rango = x.hasta === null ? 'más de ' + (x.desde-1) + ' días'
+              : (x.desde === 0 ? 'hasta ' + x.hasta + ' días'
+                               : x.desde + ' a ' + x.hasta + ' días');
+    var marca = n < i ? 'ya pasó' : (n === i ? 'estás aquí' : '');
+    return '<li class="' + cls + '"><span class="t">' + x.nom + '</span>' +
+           '<span class="r">' + rango + '</span>' +
+           '<span class="m">' + marca + '</span></li>';
+  }).join('');
+
+  out.innerHTML =
+    '<p class="mora-dias">Llevas <b>' + dias + (dias === 1 ? ' día' : ' días') + '</b> de atraso.</p>' +
+    '<p class="mora-ahora">' + t.nom + '</p>' +
+    (faltan !== null
+      ? '<p class="mora-falta">Te faltan <b>' + faltan + (faltan === 1 ? ' día' : ' días') +
+        '</b> para caer a ' + sig.nom + '.</p>'
+      : '<p class="mora-falta">Es el último tramo de la escala.</p>') +
+    '<ul class="mora-tabla">' + filas + '</ul>' +
+    '<p class="mora-falta" style="margin-top:13px">' + t.que + '</p>' +
+    '<a class="mora-cta" href="/renegociar/peru.html">Qué decir cuando llames &rarr;</a>';
+  out.hidden = false;
+  medir('__mora', t.nom, {});
+}
+(function(){
+  var inp = document.getElementById('moraFecha');
+  if(inp) inp.addEventListener('change', pintarMora);
+})();
 
 /* ---------- compartir ----------
    El dato que la gente quiere contar no es la herramienta: es SU fecha.
